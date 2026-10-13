@@ -1403,8 +1403,8 @@ std::pair<node_status_t, branch_direction_t> branch_and_bound_t<i_t, f_t>::updat
   worker->recompute_basis = true;
 
   if (lp_status == dual_status_t::DUAL_UNBOUNDED) {
-    node_ptr->lower_bound = inf;
-    policy.graphviz(search_tree, node_ptr, "infeasible", 0.0);
+    node_ptr->lower_bound = upper_bound_.load();
+    policy.graphviz(search_tree, node_ptr, "infeasible", upper_bound_.load());
     search_tree.update(node_ptr, node_status_t::INFEASIBLE);
     status = node_status_t::INFEASIBLE;
 
@@ -4788,7 +4788,6 @@ mip_status_t branch_and_bound_t<i_t, f_t>::solve(mip_solution_t<i_t, f_t>& solut
 
     if (!std::isfinite(lower_bound)) { lower_bound = search_tree_.root.lower_bound; }
   }
-  lower_bound = std::min(lower_bound, upper_bound_.load());
 
   DEBUG_SUBMIP("RINS: success={}, infeasible={}, empty={}, calls={}",
                rins_stats_.total_success.load(),
